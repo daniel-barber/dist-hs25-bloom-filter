@@ -20,22 +20,24 @@ public class Main {
         System.out.println("Loaded " + words.size() + " words from " + wordsPath);
 
         // decide bloom filter size
-        int n = words.size();  // how many elements we will store
-        int m = n * 20;
-        int k = 3;
+        int n = words.size();  // expected number of elements
+        double p = 0.01;       // desired false positive probability (1%)
 
         System.out.println("Creating Bloom filter with:");
-        System.out.println("  m = " + m + " bits");
-        System.out.println("  k = " + k + " hash functions (simple)");
+        System.out.println("  n = " + n + " expected elements");
+        System.out.println("  p = " + p + " target false positive probability");
 
-        BloomFilter bloomFilter = new BloomFilter(m, k);
+        // bloom filter using formulas and murmur
+        BloomFilter bloomFilter = new BloomFilter(n, p);
+        System.out.println("  -> m = " + bloomFilter.getM() + " bits");
+        System.out.println("  -> k = " + bloomFilter.getK() + " hash functions");
 
+        // insert words into bloom filter
         for (String w : words) {
             if (!w.isBlank()) {
                 bloomFilter.add(w);
             }
         }
-
         System.out.println("All words inserted into the Bloom filter.");
 
         if (!words.isEmpty()) {
