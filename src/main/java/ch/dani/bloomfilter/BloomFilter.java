@@ -7,13 +7,10 @@ import java.util.BitSet;
 
 public class BloomFilter {
 
-    // version 1: fixed size and simple hash function
-    // version 2: full bloom filter
-
     private final BitSet bits; // bit array
-    private final int m; // number of bits
-    private final int k; // number of hash functions
-    private final HashFunction[] hashFunctions; // k different hash functions
+    private final int m; // anzahl bits
+    private final int k; // anzahl hashfunktionen
+    private final HashFunction[] hashFunctions; // k verschiedene murmur3 hashfunktionen mit verschiedenen seeds
 
 
     public BloomFilter(int n, double p) {
@@ -21,7 +18,7 @@ public class BloomFilter {
             throw new IllegalArgumentException("n must be > 0");
         }
         if (p <= 0.0 || p >= 1.0) {
-            throw new IllegalArgumentException("p must be between 0 and 1 (exclusive)");
+            throw new IllegalArgumentException("p must be between 0 and 1");
         }
 
         // m - (n * ln p) / (ln 2)^2
@@ -54,7 +51,7 @@ public class BloomFilter {
     public void add(String value) {
         for (int i = 0; i < k; i++) {
             int index = hashToIndex(value, i);
-            bits.set(index);  // set bit to 1
+            bits.set(index);
         }
     }
 
@@ -63,7 +60,6 @@ public class BloomFilter {
         for (int i = 0; i < k; i++) {
             int index = hashToIndex(value, i);
             if (!bits.get(index)) {
-                // if one of the bits is 0, word was never added
                 return false;
             }
         }
