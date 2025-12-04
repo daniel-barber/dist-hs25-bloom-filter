@@ -1,0 +1,68 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel}
+\usepackage{graphicx}
+
+\title{Bloom-Filter: Implementierung und Auswertung}
+\author{Daniel Barber}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{1. Idee und Funktionsweise}
+
+Ein Bloom-Filter ist eine probabilistische Datenstruktur, die speichert, ob ein Element
+\emph{möglicherweise} enthalten ist oder \emph{sicher nicht}.
+Er verwendet dazu ein Bitfeld der Länge $m$ und $k$ Hashfunktionen.
+Beim Einfügen eines Elements werden $k$ Bit-Positionen gesetzt.
+Beim Abfragen werden die gleichen Positionen überprüft.
+
+\textbf{Vorteile:}
+\begin{itemize}
+  \item Sehr wenig Speicherverbrauch
+  \item Sehr schnelle Abfragen
+  \item Einfache Implementierung
+\end{itemize}
+
+\textbf{Nachteile:}
+\begin{itemize}
+  \item Es gibt false positives
+  \item Einmal gesetzte Bits können nicht entfernt werden (ohne Counting-Bloom-Filter)
+\end{itemize}
+
+\section*{2. Beispiel aus der Praxis}
+
+Ein Beispiel für den Einsatz eines Bloom-Filters ist \textbf{Google Safe Browsing}.
+Browser wie Chrome verwenden einen Bloom-Filter, um schnell zu prüfen, ob eine URL
+in einer Liste gefährlicher Webseiten enthalten sein könnte.
+Die Abfrage ist dadurch extrem schnell und speichereffizient.
+
+Weitere Beispiele:
+\begin{itemize}
+  \item Datenbanken (Cassandra, LevelDB)
+  \item Web-Caches
+  \item Peer-to-Peer-Netzwerke
+\end{itemize}
+
+\section*{3. Test der Fehlerrate}
+
+Für die Aufgabe wurde eine Wortliste aus \texttt{words.txt} mit $n$ Einträgen verwendet.
+Der Bloom-Filter wurde mit der gewünschten Fehlerwahrscheinlichkeit $p = 0.01$ erstellt.
+Die Werte $m$ und $k$ wurden nach den Standardformeln berechnet.
+
+Anschließend wurde ein Experiment mit vielen zufälligen Nicht-Wörtern durchgeführt, um die
+experimentelle Fehlerrate zu messen.
+
+\begin{center}
+  \includegraphics[width=\textwidth]{output.png}
+\end{center}
+
+\textbf{Beobachtung:}
+Die experimentelle Fehlerrate lag nahe beim erwarteten Wert von $p = 0.01$, was zeigt, dass
+der Bloom-Filter korrekt implementiert wurde.
+
+\end{document}
