@@ -10,14 +10,28 @@ import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
+        // Fehlerwahrscheinlichkeit p
+        double p = 0.01;
+        if (args.length > 0) {
+            try {
+                p = Double.parseDouble(args[0]);
+                if (p <= 0.0 || p >= 1.0) {
+                    System.out.println("p must be between 0 and 1. Using default p = 0.01.");
+                    p = 0.01;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Could not parse p. Using default p = 0.01.");
+            }
+        }
+
         try {
-            runProgram();
+            runProgram(p);
         } catch (IOException e) {
             System.out.println("Error while reading words.txt: " + e.getMessage());
         }
     }
 
-    private static void runProgram() throws IOException {
+    private static void runProgram(double p) throws IOException {
         Path wordsPath = Path.of("data", "words.txt");
         List<String> words = Files.readAllLines(wordsPath);
         System.out.println("Loaded " + words.size() + " words from " + wordsPath);
@@ -29,21 +43,21 @@ public class Main {
             }
         }
 
-        // decide bloom filter size
-        int n = dictionary.size();  // expected number of elements
-        double p = 0.01;       // desired false positive probability (1%)
 
+        int n = dictionary.size();  // erwartete anzahl elemente
+
+        System.out.println();
         System.out.println("Creating Bloom filter with:");
-        System.out.println("  n = " + n + " expected elements");
+        System.out.println("  n = " + n + " elements");
         System.out.println("  p = " + p + " target false positive probability");
 
         // bloom filter using formulas and murmur
         BloomFilter bloomFilter = new BloomFilter(n, p);
-        System.out.println("  -> m = " + bloomFilter.getM() + " bits");
-        System.out.println("  -> k = " + bloomFilter.getK() + " hash functions");
+        System.out.println("  m = " + bloomFilter.getM() + " bits");
+        System.out.println("  k = " + bloomFilter.getK() + " hash functions");
 
         // insert words into bloom filter
-        for (String word : words) {
+        for (String word : dictionary) {
             bloomFilter.add(word);
         }
         System.out.println("All words inserted into the Bloom filter.");
@@ -53,28 +67,30 @@ public class Main {
             String wordNotIn = "thiswordisnotinthedictionary123";
 
             System.out.println();
-            System.out.println("Test 1: word from the list: " + wordIn);
-            System.out.println("  mightContain = " + bloomFilter.mightContain(wordIn));
-
-            System.out.println("Test 2: made-up word: " + wordNotIn);
-            System.out.println("  mightContain = " + bloomFilter.mightContain(wordNotIn));
+            System.out.println("Manual check:");
+            System.out.println("  word from list: " + wordIn +
+                    " -> " + bloomFilter.mightContain(wordIn));
+            System.out.println("  made-up word: " + wordNotIn +
+                    " -> " + bloomFilter.mightContain(wordNotIn));
         }
 
-        // run false positive experiment
+        // Experiment zur Fehlerrate
         int testCount = 100_000; // random string count
         System.out.println();
-        System.out.println("Running false-positive experiment with " + testCount + " random strings...");
+        System.out.println("Running false-positive experiment with " + testCount + " random strings");
         double experimentalRate = runFalsePositiveExperiment(bloomFilter, dictionary, testCount);
 
         System.out.println();
         System.out.println("===== RESULT =====");
         System.out.println("Target false positive probability p: " + p);
-        System.out.println("Experimental false positive rate:   " + experimentalRate);
-        System.out.println("n = " + n + ", m = " + bloomFilter.getM() + ", k = " + bloomFilter.getK());
+        System.out.println("Experimental false positive rate: " + experimentalRate);
+        System.out.println("Parameters: n = " + n
+                + ", m = " + bloomFilter.getM()
+                + ", k = " + bloomFilter.getK());
         System.out.println("==================");
     }
 
-    // false positive experiment
+    // Experiment: viele zufällige strings testen, die nicht im dictionary sind
     private static double runFalsePositiveExperiment(BloomFilter bloomFilter, Set<String> dictionary, int testCount) {
         Random random = new Random();
         int falsePositives = 0;
@@ -87,9 +103,7 @@ public class Main {
                 continue;
             }
 
-            boolean maybe = bloomFilter.mightContain(candidate);
-
-            if(maybe){
+            if (bloomFilter.mightContain(candidate)) {
                 falsePositives++;
             }
             tested++;
