@@ -33,18 +33,17 @@ public class Main {
 
     private static void runProgram(double p) throws IOException {
         Path wordsPath = Path.of("data", "words.txt");
-        List<String> words = Files.readAllLines(wordsPath);
-        System.out.println("Loaded " + words.size() + " words from " + wordsPath);
+        List<String> lines = Files.readAllLines(wordsPath);
 
         Set<String> dictionary = new HashSet<>();
-        for (String word : words) {
-            if (!word.isBlank()) {
-                dictionary.add(word);
+        for (String line : lines) {
+            if (!line.isBlank()) {
+                dictionary.add(line);
             }
         }
 
-
         int n = dictionary.size();  // erwartete anzahl elemente
+        System.out.println("Loaded " + n + " words from data/words.txt");
 
         System.out.println();
         System.out.println("Creating Bloom filter with:");
@@ -62,8 +61,8 @@ public class Main {
         }
         System.out.println("All words inserted into the Bloom filter.");
 
-        if (!words.isEmpty()) {
-            String wordIn = words.getFirst();
+        if (!lines.isEmpty()) {
+            String wordIn = lines.getFirst();
             String wordNotIn = "thiswordisnotinthedictionary123";
 
             System.out.println();
