@@ -97,7 +97,7 @@ public class Main {
         int tested = 0;
 
         while(tested < testCount) {
-            String candidate = generateRandomString(random, 10); // 10 letters
+            String candidate = generateRandomString(random); // 10 letters
 
             if(dictionary.contains(candidate)) {
                 continue;
@@ -112,10 +112,10 @@ public class Main {
     }
 
     // generate random string
-    private static String generateRandomString(Random random, int length) {
+    private static String generateRandomString(Random random) {
         String letters = "abcdefghijklmnopqrstuvwxyz";
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < 10; i++) {
             sb.append(letters.charAt(random.nextInt(letters.length())));
         }
         return sb.toString();
