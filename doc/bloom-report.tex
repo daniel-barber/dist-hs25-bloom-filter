@@ -4,9 +4,11 @@
 \usepackage[T1]{fontenc}
 \usepackage[ngerman]{babel}
 \usepackage{graphicx}
+\usepackage{amsmath}
+
 
 \title{Bloom-Filter: Implementierung und Auswertung}
-\author{Daniel Barber}
+\author{Daniel Barber \and Tamira Leber}
 \date{\today}
 
 \begin{document}
@@ -15,54 +17,62 @@
 
 \section*{1. Idee und Funktionsweise}
 
-Ein Bloom-Filter ist eine probabilistische Datenstruktur, die speichert, ob ein Element
-\emph{möglicherweise} enthalten ist oder \emph{sicher nicht}.
-Er verwendet dazu ein Bitfeld der Länge $m$ und $k$ Hashfunktionen.
-Beim Einfügen eines Elements werden $k$ Bit-Positionen gesetzt.
-Beim Abfragen werden die gleichen Positionen überprüft.
+Ein Bloom-Filter ist eine probabilistische Datenstruktur, die mit sehr wenig Speicher auskommt.
+Statt Elemente direkt zu speichern, verwendet er ein Bitfeld der Länge $m$ und $k$
+Hashfunktionen.
+Beim Einfügen eines Strings werden $k$ Bit-Positionen gesetzt.
+Bei einer Abfrage werden dieselben Positionen geprüft:
+\begin{itemize}
+    \item Wenn mindestens ein Bit 0 ist, ist das Element \emph{sicher nicht} enthalten.
+    \item Wenn alle Bits 1 sind, ist das Element \emph{möglicherweise} enthalten (false positive möglich).
+\end{itemize}
 
 \textbf{Vorteile:}
 \begin{itemize}
-  \item Sehr wenig Speicherverbrauch
-  \item Sehr schnelle Abfragen
-  \item Einfache Implementierung
+    \item Sehr geringer Speicherbedarf
+    \item Schnelle Einfüge- und Abfrageoperationen
+    \item Einfache Implementierung
 \end{itemize}
 
 \textbf{Nachteile:}
 \begin{itemize}
-  \item Es gibt false positives
-  \item Einmal gesetzte Bits können nicht entfernt werden (ohne Counting-Bloom-Filter)
+    \item False positives sind möglich.
+    \item Löschen ist nicht ohne Weiteres möglich (nur mit Counting-Bloom-Filtern)
 \end{itemize}
 
 \section*{2. Beispiel aus der Praxis}
 
-Ein Beispiel für den Einsatz eines Bloom-Filters ist \textbf{Google Safe Browsing}.
-Browser wie Chrome verwenden einen Bloom-Filter, um schnell zu prüfen, ob eine URL
-in einer Liste gefährlicher Webseiten enthalten sein könnte.
-Die Abfrage ist dadurch extrem schnell und speichereffizient.
-
-Weitere Beispiele:
-\begin{itemize}
-  \item Datenbanken (Cassandra, LevelDB)
-  \item Web-Caches
-  \item Peer-to-Peer-Netzwerke
-\end{itemize}
+Bloom-Filter werden in vielen Anwendungen eingesetzt, in denen schnelle Vorabprüfungen
+erforderlich sind.
+Ein bekanntes Beispiel ist \textbf{Google Safe Browsing}.
+Dort wird ein Bloom-Filter
+verwendet, um effizient zu prüfen, ob eine URL möglicherweise auf einer Liste
+schädlicher Webseiten steht.
+So lassen sich unnötige Netzwerkabfragen reduzieren.
 
 \section*{3. Test der Fehlerrate}
 
-Für die Aufgabe wurde eine Wortliste aus \texttt{words.txt} mit $n$ Einträgen verwendet.
-Der Bloom-Filter wurde mit der gewünschten Fehlerwahrscheinlichkeit $p = 0.01$ erstellt.
-Die Werte $m$ und $k$ wurden nach den Standardformeln berechnet.
+Für die Aufgabe haben wir die Wortliste \texttt{words.txt} verwendet.
+Die erwartete Elementanzahl $n$ wurde automatisch aus der Datei bestimmt.
+Das Programm erhält einen
+gewünschten Fehlerparameter $p$ als Eingabe und berechnet daraus die nötige Filtergrösse $m$
+und die optimale Anzahl Hashfunktionen $k$.
+Die Berechnung erfolgt mit den Standardformeln:
+\[
+    m = -\frac{n \ln p}{(\ln 2)^2} \qquad
+    k = \frac{m}{n} \ln 2
+\]
 
-Anschließend wurde ein Experiment mit vielen zufälligen Nicht-Wörtern durchgeführt, um die
-experimentelle Fehlerrate zu messen.
+Als Hashverfahren kam \texttt{murmur3\_128} zum Einsatz, wobei für jede der $k$
+Hashfunktionen ein anderer Seed verwendet wurde.
+
+Zur Bestimmung der tatsächlichen Fehlerrate wurden viele zufällige Nicht-Wörter erzeugt und im
+Bloom-Filter abgefragt.
+Die Anzahl der false positives geteilt durch die Gesamtanzahl der Tests
+ergibt die experimentelle Fehlerrate.
 
 \begin{center}
   \includegraphics[width=\textwidth]{output.png}
 \end{center}
-
-\textbf{Beobachtung:}
-Die experimentelle Fehlerrate lag nahe beim erwarteten Wert von $p = 0.01$, was zeigt, dass
-der Bloom-Filter korrekt implementiert wurde.
 
 \end{document}
